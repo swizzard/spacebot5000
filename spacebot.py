@@ -66,17 +66,24 @@ def run(path, dry):
         if dry:
             print tweet
         else:
-            client.update_status(**tweet)
-        cnt += 1
-        if cnt > 500:
-            proc.terminate()
-            proc = make_proc()
-            proc.start()
-        time.sleep(2100)
+            try:
+                client.update_status(**tweet)
+            except Exception as err:
+                logging.exception(err.message)
+            else:
+                cnt += 1
+                if cnt > 500:
+                    try:
+                        proc.terminate()
+                    except Exception as err:
+                        logging.exception(err.message)
+                    proc = make_proc()
+                    proc.start()
+                time.sleep(2100)
 
 
 if __name__ == '__main__':
-    logging.basicConfig(filename='spacebot.log', level=logging.DEBUG)
+    logging.basicConfig(filename='spacebot.log', level=logging.WARNING)
     err = False
     dry = False
     if len(sys.argv) == 1:
