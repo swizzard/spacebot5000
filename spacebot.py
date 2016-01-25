@@ -37,21 +37,29 @@ def make_tweets(client):
 
 
 def prep_env():
-    try:
-        subprocess.check_call(['sudo', 'Xvfb', ':1', '-screen', '0',
-                               '1024x768x24'], stdout=subprocess.PIPE,
-                              stderr=subprocess.PIPE)
-    except subprocess.CalledProcessError:
-        logging.warning('Xvfb already running')
+    def prc():
+        logging.info('prep env')
+        try:
+            subprocess.check_call(['sudo', 'Xvfb', ':1', '-screen', '0',
+                                '1024x768x24&'])
+        except subprocess.CalledProcessError:
+            logging.warning('Xvfb already running')
+
+    proc = multiprocessing.Process(target=prc)
+    proc.start()
     os.environ['DISPLAY'] = ':1'
 
 
 def make_proc():
 
     def prc():
-        subprocess.call(['/home/ubuntu/processing-3.0.1/processing-java',
-                         '--sketch=/home/ubuntu/spacebot/space', '--run'])
+        try:
+            subprocess.check_call(['/home/ubuntu/processing-3.0.1/processing-java',
+                                   '--sketch=/home/ubuntu/spacebot/space', '--run'])
+        except subprocess.CalledProcessError as err:
+            logging.exception(err.message)
 
+    logging.info('starting processing')
     proc = multiprocessing.Process(target=prc)
     return proc
 
@@ -59,6 +67,7 @@ def make_proc():
 def run(path, dry):
     proc = make_proc()
     proc.start()
+    logging.info('waiting for processing to start')
     time.sleep(120)  # wait for processing to boot up
     cnt = 0
     client = get_client(path)
@@ -84,7 +93,8 @@ def run(path, dry):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(filename='spacebot.log', level=logging.INFO)
+    logging.basicConfig(filename='spacebot.log', level=logging.DEBUG,
+                        format='%(asctime)s %(message)s')
     err = False
     dry = False
     if len(sys.argv) == 1:
@@ -97,5 +107,6 @@ if __name__ == '__main__':
         print 'usage:\n\tspacebot.py path/to/config.json [dry]'
     else:
         prep_env()
+        logging.info('starting')
         run(sys.argv[1], dry)
 
