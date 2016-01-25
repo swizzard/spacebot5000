@@ -95,5 +95,6 @@ if __name__ == '__main__':
     if err:
         print 'usage:\n\tspacebot.py path/to/config.json [dry]'
     else:
+        prep_env()
         run(sys.argv[1], dry)
 
