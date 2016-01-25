@@ -67,6 +67,7 @@ def run(path, dry):
             print tweet
         else:
             try:
+                logging.info(tweet)
                 client.update_status(**tweet)
             except Exception as err:
                 logging.exception(err.message)
@@ -83,7 +84,7 @@ def run(path, dry):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(filename='spacebot.log', level=logging.WARNING)
+    logging.basicConfig(filename='spacebot.log', level=logging.INFO)
     err = False
     dry = False
     if len(sys.argv) == 1:
